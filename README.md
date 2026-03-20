@@ -1,2 +1,57 @@
-# DiffusionBased-TSAD
-Conditional DDPM for unsupervised anomaly detection in multivariate industrial sensor time series.
+# Conditional DDPM による多次元時系列異常検知
+
+## 実験目的
+
+工場センサデータを模した多次元時系列データに対して、条件付き DDPM (Denoising Diffusion Probabilistic Models) を用いた異常検知システムを構築・評価する。
+
+## 背景
+
+### なぜ拡散モデルか
+
+生成モデルによる異常検知は、正常データのみで学習したモデルの再構成誤差を利用する手法が主流である。GAN や VAE を用いた先行研究では、再構成画像の不鮮明さや入力から回転するなどの問題があり、微細な異常の検出に限界があった。
+
+DDPM は鮮明な再構成が可能であり、かつ確率的なノイズ除去プロセスが正常分布を精密に学習できる。柏原・松原 (JSAI2022) は「拡散過程を使用しない」推論方式（部分ノイズ化）を提案し、MVTec AD 画像データセットで AUROC 0.92 を達成した。
+
+### なぜ時系列か
+
+- **画像への応用は多いが時系列への適用は少ない**。工場センサデータへの拡散モデル応用は研究途上である
+- センサ種別の違い (振動・温度・圧力) による **マルチモーダル性** があり、モデル設計の難易度が高い
+- 製造業では **微細なセンサのブレに異常が現れる**ことがあり、単純な分類器では精度が不足する場面がある
+- 拡散モデルの「詳細な再現」能力が時系列異常検知においても有効であると仮説を立てる
+
+## 実験内容
+
+1. センサデータを模した多次元時系列データを合成生成 (正常 / 4種類の異常パターン)
+2. 正常データのみで Conditional DDPM を学習
+3. テスト信号を `t*` ステップだけ部分ノイズ化し逆拡散して再構成
+4. 再構成誤差を異常スコアとして閾値判定
+
+```
+           学習時                       推論時
+  x₀(正常) → x_t → ε_θ(x_t,t,c)    x₀(テスト) → x_{t*} → 逆拡散 → x̂₀
+                 ↓                                               ↓
+              loss = Huber(ε, ε_θ)               score = ||x₀ - x̂₀||²
+```
+
+## 参考文献
+
+- 柏原悠, 松原崇. "拡散モデルによる拡散を使用しない異常検知". 人工知能学会全国大会論文集 JSAI2022 (2022). DOI: [10.11517/pjsai.jsai2022.0_1f5gs1001](https://doi.org/10.11517/pjsai.jsai2022.0_1f5gs1001)
+- Ho et al. "Denoising Diffusion Probabilistic Models". NeurIPS 2020.
+- Nichol & Dhariwal. "Improved Denoising Diffusion Probabilistic Models". ICML 2021.
+
+## 合格基準
+
+| 指標 | 基準 |
+|---|---|
+| AUROC | ≥ 0.85 |
+| MSE (正常) | ≤ 0.05 |
+| MSE比 (異常/正常) | ≥ 3.0 |
+
+## クイックスタート
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+詳細は [Requirements.md](Requirements.md) / [CLAUDE.md](CLAUDE.md) を参照。
