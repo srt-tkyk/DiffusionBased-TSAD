@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/srt/Workspace/DiffusionBased-TSAD -not -path */.git/* -type f -o -type d)",
+      "Bash(python -m pytest tests/test_data_generator.py -v)",
+      "Bash(python3 -m pytest tests/test_data_generator.py -v)",
+      "Bash(python3 -m pytest tests/test_noise_schedule.py -v)",
+      "Bash(python3 -m pytest tests/test_model.py -v)",
+      "Bash(python3 -m pytest tests/test_ddpm.py -v)",
+      "Bash(python3 -m pytest tests/test_evaluator.py -v)",
+      "Bash(python3 -m pytest tests/test_integration.py -v)",
+      "Bash(python3 -m pytest tests/ -v)"
+    ]
+  }
+}
